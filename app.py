@@ -2,6 +2,7 @@ import gradio as gr
 import pandas as pd
 import json
 import os
+import torch
 from datasets import Dataset
 from unsloth import FastLanguageModel
 from typing import Tuple, Dict
@@ -142,9 +143,14 @@ with gr.Blocks(title="LLaMA/Gemma Fine-Tuning UI") as demo:
         output_dir = gr.Textbox(label="Saved Model Path", visible=False)
         download_btn = gr.Button("Download Model", visible=False)
     
-    # Event handlers
+    # Corrected event handler
     demo.load(
-        fn=lambda: DEFAULT_HYPERPARAMS,
+        fn=lambda: (
+            DEFAULT_HYPERPARAMS["learning_rate"],
+            DEFAULT_HYPERPARAMS["batch_size"],
+            DEFAULT_HYPERPARAMS["num_epochs"],
+            DEFAULT_HYPERPARAMS["lora_r"],
+        ),
         outputs=[lr, batch_size, epochs, lora_r]
     )
     
@@ -154,13 +160,7 @@ with gr.Blocks(title="LLaMA/Gemma Fine-Tuning UI") as demo:
         inputs=[
             model_choice,
             dataset_upload,
-            gr.JSON({
-                "learning_rate": lr,
-                "batch_size": batch_size,
-                "num_epochs": epochs,
-                "lora_r": lora_r,
-                "max_seq_length": 2048,
-            }),
+            gr.JSON(value=DEFAULT_HYPERPARAMS),
             input_col,
             output_col,
         ],
